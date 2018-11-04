@@ -376,10 +376,11 @@ amount_row(_("Bank Charge:"), 'charge', null, '', $bank_currency);
 
 ## MODIFIED_START
 check_row(_("Cheque payment"), "is_cheque",null, true);
-if (check_value("is_cheque")==1){
+if(isset($_POST["is_cheque"])){
     $Ajax->activate("_page_body");
-    
-    text_row(_("Cheque no"), "cheque_no", "", 20, 20);
+}
+if (check_value("is_cheque")==1){
+    text_row(_("Cheque no"), "cheque_no", null, 20, 20);
     date_row(_("Cheque date"), "cheque_date");
 }
 ## MODIFIED_END

@@ -122,7 +122,7 @@ if ($selected_id != -1)
 		$_POST['description']  = $myrow["description"];
 	}
 	hidden("selected_id", $selected_id);
-} 
+}
 
 text_row_ex(_("Area Name:"), 'description', 30); 
 

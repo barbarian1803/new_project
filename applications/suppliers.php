@@ -18,7 +18,9 @@ class suppliers_app extends application
 		$this->add_module(_("Transactions"));
 		$this->add_lapp_function(0, _("Purchase &Order Entry"),
 			"purchasing/po_entry_items.php?NewOrder=Yes", 'SA_PURCHASEORDER', MENU_TRANSACTION);
-		$this->add_lapp_function(0, _("&Outstanding Purchase Orders Maintenance"),
+		$this->add_lapp_function(0, _("Purchase Order Quotation Entry"),
+			"purchasing/po_quotation.php?NewOrder=Yes", 'SA_PURCHASEORDER', MENU_TRANSACTION);
+                $this->add_lapp_function(0, _("&Outstanding Purchase Orders Maintenance"),
 			"purchasing/inquiry/po_search.php?", 'SA_GRN', MENU_TRANSACTION);
 		$this->add_lapp_function(0, _("Direct &GRN"),
 			"purchasing/po_entry_items.php?NewGRN=Yes", 'SA_GRN', MENU_TRANSACTION);
