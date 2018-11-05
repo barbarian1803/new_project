@@ -3,6 +3,7 @@
 ## MODIFIED START
 include_once($path_to_root . "/purchasing/includes/db/po_approval_db.php");
 include_once($path_to_root . "/purchasing/includes/purchasing_db.inc");
+include_once($path_to_root . "/email.config.inc");
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -100,6 +101,7 @@ function url($url) {
 
 function send_email_approval($trans_no, $email) {
     global $path_to_root;
+    global $email_config;
     $sql = "SELECT * FROM " . TB_PREF . "po_quot WHERE order_no=" . db_escape($trans_no);
     $data = db_fetch(db_query($sql));
     $code = $data["approval_code"];
@@ -123,24 +125,20 @@ function send_email_approval($trans_no, $email) {
     
     $mail = new PHPMailer;
     $mail->isSMTP(); 
-    $mail->SMTPDebug = 2; // 0 = off (for production use) - 1 = client messages - 2 = client and server messages
-    $mail->Host = "smtp.gmail.com"; // use $mail->Host = gethostbyname('smtp.gmail.com'); // if your network does not support SMTP over IPv6
-    $mail->Port = 587; // TLS only
-    $mail->SMTPSecure = 'tls'; // ssl is depracated
-    $mail->SMTPAuth = true;
-    $mail->Username = "dummy.test.fa@gmail.com";
-    $mail->Password = "DummyTest123";
+    $mail->SMTPDebug = 0; // 0 = off (for production use) - 1 = client messages - 2 = client and server messages
+    $mail->Host = $email_config["smtp_host"]; // use $mail->Host = gethostbyname('smtp.gmail.com'); // if your network does not support SMTP over IPv6
+    $mail->Port = $email_config["smtp_port"]; // TLS only
+    $mail->SMTPSecure = $email_config["secure"]; // ssl is depracated
+    $mail->SMTPAuth = $email_config["auth"];
+    $mail->Username = $email_config["username"];
+    $mail->Password = $email_config["password"];
     $mail->setFrom("no-reply@server.com", "No-reply Frontaccounting system");
     $mail->addAddress($email, $email);
     $mail->Subject = $subject;
     $mail->msgHTML($message); 
     $mail->AltBody = 'HTML messaging not supported';
 
-    if(!$mail->send()){
-        echo "Mailer Error: " . $mail->ErrorInfo;
-    }else{
-        echo "Message sent!";
-    }
+    $mail->send();
 }
 
 function validate_approval($cart, $trans_no) {
