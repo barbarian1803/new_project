@@ -116,7 +116,7 @@ if(isset($_POST["need_approval"])){
 }
 
 if(check_value("need_approval")==1){
-    text_row_ex(_("Email:"), 'email', 25);
+    text_row_ex(_("Email:"), 'email', 25,255);
 }else{
     hidden("email", "");
 }

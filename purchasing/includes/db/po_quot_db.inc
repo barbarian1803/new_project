@@ -4,6 +4,14 @@
 include_once($path_to_root . "/purchasing/includes/db/po_approval_db.php");
 include_once($path_to_root . "/purchasing/includes/purchasing_db.inc");
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require $path_to_root . "/includes/phpmailer/Exception.php";
+require $path_to_root . "/includes/phpmailer/PHPMailer.php";
+require $path_to_root . "/includes/phpmailer/SMTP.php";
+
+
 function random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
     $pieces = [];
     $max = mb_strlen($keyspace, '8bit') - 1;
@@ -91,11 +99,12 @@ function url($url) {
 }
 
 function send_email_approval($trans_no, $email) {
+    global $path_to_root;
     $sql = "SELECT * FROM " . TB_PREF . "po_quot WHERE order_no=" . db_escape($trans_no);
     $data = db_fetch(db_query($sql));
     $code = $data["approval_code"];
     
-    $url = "http://".$_SERVER["HTTP_HOST"]."purchasing/po_quot_review.php?trans_no=".$trans_no."&approval_code=".$code;
+    $url = "http://".$_SERVER["HTTP_HOST"]."/purchasing/po_quot_review.php?trans_no=".$trans_no."&approval_code=".$code;
     
     $subject = "Purchase Order Quotation Approval";
     $headers = "From: Frontaccounting web system\r\n";
@@ -112,7 +121,26 @@ function send_email_approval($trans_no, $email) {
       </html>
     ";
     
-    mail($email, $subject, $message, $headers);
+    $mail = new PHPMailer;
+    $mail->isSMTP(); 
+    $mail->SMTPDebug = 2; // 0 = off (for production use) - 1 = client messages - 2 = client and server messages
+    $mail->Host = "smtp.gmail.com"; // use $mail->Host = gethostbyname('smtp.gmail.com'); // if your network does not support SMTP over IPv6
+    $mail->Port = 587; // TLS only
+    $mail->SMTPSecure = 'tls'; // ssl is depracated
+    $mail->SMTPAuth = true;
+    $mail->Username = "dummy.test.fa@gmail.com";
+    $mail->Password = "DummyTest123";
+    $mail->setFrom("no-reply@server.com", "No-reply Frontaccounting system");
+    $mail->addAddress($email, $email);
+    $mail->Subject = $subject;
+    $mail->msgHTML($message); 
+    $mail->AltBody = 'HTML messaging not supported';
+
+    if(!$mail->send()){
+        echo "Mailer Error: " . $mail->ErrorInfo;
+    }else{
+        echo "Message sent!";
+    }
 }
 
 function validate_approval($cart, $trans_no) {
