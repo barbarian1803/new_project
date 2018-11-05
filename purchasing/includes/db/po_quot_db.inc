@@ -94,6 +94,13 @@ function approve_po_quot($trans_no, $cart) {
     return $trans_no;
 }
 
+function reject_po_quot($trans_no, $cart) {
+    global $Refs;
+    $sql = "UPDATE " . TB_PREF . "po_quot SET is_approved = '-1' WHERE order_no=" . db_escape($trans_no);
+    db_query($sql);
+    return;
+}
+
 function url($url) {
   $result = parse_url($url);
   return $result['scheme']."://".$result['host'];

@@ -47,9 +47,18 @@ $purchase_order = new purch_order;
 read_po_quot($_GET['trans_no'],$_GET['approval_code'], $purchase_order);
 
 
-if(isset($_POST['approve']) && check_value("approve")==1){
+if(isset($_POST['approve']) && $_POST['approve']==1){
     approve_po_quot($_GET['trans_no'],$purchase_order);
     display_notification_centered("PO Quotation approved");
+    end_page();
+    return;
+}else if(isset($_POST['approve']) && $_POST['approve']==-1){
+    reject_po_quot($_GET['trans_no'],$purchase_order);
+    display_notification_centered("PO Quotation rejected");
+    end_page();
+    return;
+}else if(isset($_POST['approve']) && $_POST['approve']==0){
+    display_notification_centered("PO Quotation status is pending");
     end_page();
     return;
 }
@@ -118,18 +127,24 @@ if ($overdue_items)
 
 end_table(1); // outer table
 
-if(!$purchase_order->is_approved){
+if($purchase_order->is_approved==0){
     start_form();
     hidden("trans_no",$purchase_order->order_no);
     hidden("approval_code",$_GET['approval_code']);
+    start_table();
+    array_selector_row("Approval?", "approve", null,array(0=>"Pending",-1=>"Rejected",1=>"Accepted"));
+    end_table();
     echo "<center>";
-    check("Approve", "approve");
     submit("Submit", "submit");
     echo "</center>";
     end_form();
-}else{
+}else if ($purchase_order->is_approved==1){
     echo "<center>";
     echo "<h2>This PO Quotation has been approved</h2>";
+    echo "</center>";
+}else if ($purchase_order->is_approved==-1){
+    echo "<center>";
+    echo "<h2>This PO Quotation has been rejected</h2>";
     echo "</center>";
 }
 
