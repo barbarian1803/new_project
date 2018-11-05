@@ -85,10 +85,34 @@ function approve_po_quot($trans_no, $cart) {
     return $trans_no;
 }
 
+function url($url) {
+  $result = parse_url($url);
+  return $result['scheme']."://".$result['host'];
+}
+
 function send_email_approval($trans_no, $email) {
     $sql = "SELECT * FROM " . TB_PREF . "po_quot WHERE order_no=" . db_escape($trans_no);
     $data = db_fetch(db_query($sql));
     $code = $data["approval_code"];
+    
+    $url = "http://".$_SERVER["HTTP_HOST"]."purchasing/po_quot_review.php?trans_no=".$trans_no."&approval_code=".$code;
+    
+    $subject = "Purchase Order Quotation Approval";
+    $headers = "From: Frontaccounting web system\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+    $message = "
+      <html>
+          <body>
+             <p>
+                New purchase order quotation that needs approval has been inputted. Please check and review the PO Quotation from this link:
+                <a href='".$url."'>".$url."</a>
+             </p>
+          </body>
+      </html>
+    ";
+    
+    mail($email, $subject, $message, $headers);
 }
 
 function validate_approval($cart, $trans_no) {

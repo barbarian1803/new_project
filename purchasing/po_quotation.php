@@ -37,10 +37,19 @@ if (isset($_GET['AddedID'])) {
     $order_no = $_GET['AddedID'];
     $trans_type = ST_POQUOT;
 
-    if ($_GET['Approved']==1)
+    if ($_GET['Approved']==1){
+        $trans_type = ST_PURCHORDER;
         display_notification_centered(_("PO Quotation has been entered and has been approved"));
-    else
+        display_note(get_trans_view_str($trans_type, $order_no, _("&View this order")), 0, 1);
+
+	display_note(print_document_link($order_no, _("&Print This Order"), true, $trans_type), 0, 1);
+
+	display_note(print_document_link($order_no, _("&Email This Order"), true, $trans_type, false, "printlink", "", 1));
+
+	hyperlink_params($path_to_root . "/purchasing/po_receive_items.php", _("&Receive Items on this Purchase Order"), "PONumber=$order_no");
+    }else{
         display_notification_centered(_("PO Quotation has been entered and waiting for approval"));
+    }
     // TODO, for fixed asset
     hyperlink_params($_SERVER['PHP_SELF'], _("Enter &Another PO Quotation"), "NewOrder=yes");
     #hyperlink_no_params($path_to_root."/purchasing/inquiry/po_search.php", _("Select An &Outstanding Purchase Order"));

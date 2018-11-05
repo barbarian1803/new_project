@@ -14,7 +14,7 @@ define('ST_POQUOT', 999);
 
 
 $page_security = 'SA_SUPPTRANSVIEW';
-$path_to_root = "../..";
+$path_to_root = "..";
 include($path_to_root . "/purchasing/includes/po_class.inc");
 
 include($path_to_root . "/includes/session.inc");
