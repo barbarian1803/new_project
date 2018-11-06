@@ -40,6 +40,8 @@ class suppliers_app extends application
 		$this->add_module(_("Inquiries and Reports"));
 		$this->add_lapp_function(1, _("Purchase Orders &Inquiry"),
 			"purchasing/inquiry/po_search_completed.php?", 'SA_SUPPTRANSVIEW', MENU_INQUIRY);
+                $this->add_lapp_function(1, _("Purchase Orders Quotation &Inquiry"),
+			"purchasing/po_quot_list_view.php?", 'SA_SUPPTRANSVIEW', MENU_INQUIRY);
 		$this->add_lapp_function(1, _("Supplier Transaction &Inquiry"),
 			"purchasing/inquiry/supplier_inquiry.php?", 'SA_SUPPTRANSVIEW', MENU_INQUIRY);
 		$this->add_lapp_function(1, _("Supplier Allocation &Inquiry"),

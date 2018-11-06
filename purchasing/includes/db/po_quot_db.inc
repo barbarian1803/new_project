@@ -12,7 +12,6 @@ require $path_to_root . "/includes/phpmailer/Exception.php";
 require $path_to_root . "/includes/phpmailer/PHPMailer.php";
 require $path_to_root . "/includes/phpmailer/SMTP.php";
 
-
 function random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
     $pieces = [];
     $max = mb_strlen($keyspace, '8bit') - 1;
@@ -102,8 +101,8 @@ function reject_po_quot($trans_no, $cart) {
 }
 
 function url($url) {
-  $result = parse_url($url);
-  return $result['scheme']."://".$result['host'];
+    $result = parse_url($url);
+    return $result['scheme'] . "://" . $result['host'];
 }
 
 function send_email_approval($trans_no, $email) {
@@ -112,9 +111,9 @@ function send_email_approval($trans_no, $email) {
     $sql = "SELECT * FROM " . TB_PREF . "po_quot WHERE order_no=" . db_escape($trans_no);
     $data = db_fetch(db_query($sql));
     $code = $data["approval_code"];
-    
-    $url = "http://".$_SERVER["HTTP_HOST"]."/purchasing/po_quot_review.php?trans_no=".$trans_no."&approval_code=".$code;
-    
+
+    $url = "http://" . $_SERVER["HTTP_HOST"] . "/purchasing/po_quot_review.php?trans_no=" . $trans_no . "&approval_code=" . $code;
+
     $subject = "Purchase Order Quotation Approval";
     $headers = "From: Frontaccounting web system\r\n";
     $headers .= "MIME-Version: 1.0\r\n";
@@ -124,14 +123,14 @@ function send_email_approval($trans_no, $email) {
           <body>
              <p>
                 New purchase order quotation that needs approval has been inputted. Please check and review the PO Quotation from this link:
-                <a href='".$url."'>".$url."</a>
+                <a href='" . $url . "'>" . $url . "</a>
              </p>
           </body>
       </html>
     ";
-    
+
     $mail = new PHPMailer;
-    $mail->isSMTP(); 
+    $mail->isSMTP();
     $mail->SMTPDebug = 0; // 0 = off (for production use) - 1 = client messages - 2 = client and server messages
     $mail->Host = $email_config["smtp_host"]; // use $mail->Host = gethostbyname('smtp.gmail.com'); // if your network does not support SMTP over IPv6
     $mail->Port = $email_config["smtp_port"]; // TLS only
@@ -142,7 +141,7 @@ function send_email_approval($trans_no, $email) {
     $mail->setFrom("no-reply@server.com", "No-reply Frontaccounting system");
     $mail->addAddress($email, $email);
     $mail->Subject = $subject;
-    $mail->msgHTML($message); 
+    $mail->msgHTML($message);
     $mail->AltBody = 'HTML messaging not supported';
 
     $mail->send();
@@ -190,17 +189,22 @@ function validate_approval($cart, $trans_no) {
     }
 }
 
+function get_po_by_trans_no($trans_no){
+    $sql = "SELECT * FROM ".TB_PREF."po_quot WHERE order_no=".$trans_no;
+    return db_fetch(db_query($sql));
+}
+
 //----------------------------------------------------------------------------------------
 
-function read_po_quot_header($order_no,$approval_code, &$order) {
+function read_po_quot_header($order_no, $approval_code, &$order) {
     $sql = "SELECT po.*, supplier.*, loc.location_name 
 		FROM " . TB_PREF . "po_quot po,"
             . TB_PREF . "suppliers supplier,"
             . TB_PREF . "locations loc
 		WHERE po.supplier_id = supplier.supplier_id
 		AND loc.loc_code = into_stock_location
-		AND po.order_no = " . db_escape($order_no).
-                "AND approval_code = ". db_escape($approval_code);
+		AND po.order_no = " . db_escape($order_no) .
+            "AND approval_code = " . db_escape($approval_code);
 
     $result = db_query($sql, "The order cannot be retrieved");
 
@@ -224,9 +228,9 @@ function read_po_quot_header($order_no,$approval_code, &$order) {
         $order->alloc = $myrow["alloc"];
         $order->prep_amount = $myrow["prep_amount"];
         $order->prepayments = null;
-        
+
         $order->is_approved = $myrow["is_approved"];
-        
+
         return true;
     }
 
@@ -273,11 +277,39 @@ function read_po_quot_items($order_no, &$order, $open_items_only = false) {
 
 //----------------------------------------------------------------------------------------
 
-function read_po_quot($order_no,$approval_code, &$order, $open_items_only = false) {
-    $result = read_po_quot_header($order_no,$approval_code, $order);
+function read_po_quot($order_no, $approval_code, &$order, $open_items_only = false) {
+    $result = read_po_quot_header($order_no, $approval_code, $order);
 
     if ($result)
         read_po_quot_items($order_no, $order, $open_items_only);
 }
 
 //----------------------------------------------------------------------------------------
+
+
+function get_sql_for_po_quot_search($from, $to, $status = 2) {
+    $sql = "SELECT 
+		porder.order_no,
+		supplier.supp_name,
+		porder.requisition_no, 
+		porder.ord_date,
+		supplier.curr_code,
+		Sum(line.unit_price*line.quantity_ordered) AS OrderValue,
+                porder.is_approved
+		FROM " . TB_PREF . "po_quot as porder,"
+            .TB_PREF."po_quot_details as line, "
+            .TB_PREF."suppliers as supplier
+            WHERE porder.order_no = line.po_quot_no AND porder.supplier_id = supplier.supplier_id";
+
+    $data_after = date2sql($from);
+    $data_before = date2sql($to);
+
+    $sql .= "  AND porder.ord_date >= '$data_after'";
+    $sql .= "  AND porder.ord_date <= '$data_before'";
+    
+    if($status!=2){
+        $sql .= "  AND porder.is_approved = '$status'";
+    }
+    $sql .= " GROUP BY porder.order_no";
+    return $sql;
+}
