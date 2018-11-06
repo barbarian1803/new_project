@@ -132,11 +132,18 @@ if($purchase_order->is_approved==0){
     hidden("trans_no",$purchase_order->order_no);
     hidden("approval_code",$_GET['approval_code']);
     start_table();
-    array_selector_row("Approval?", "approve", null,array(0=>"Pending",-1=>"Rejected",1=>"Accepted"));
+    start_row();
+    echo "<td>";
+    echo "Approval status: ";
+    echo "</td>";
+    echo "<td>";
+    echo array_selector("approve", null,array(0=>"Pending",-1=>"Rejected",1=>"Accepted"));
+    echo "</td>";
+    echo "<td>";
+    submit_cells("Submit", "submit");
+    echo "</td>";
+    end_row();
     end_table();
-    echo "<center>";
-    submit("Submit", "submit");
-    echo "</center>";
     end_form();
 }else if ($purchase_order->is_approved==1){
     echo "<center>";
